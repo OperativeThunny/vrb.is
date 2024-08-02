@@ -11,7 +11,6 @@ __pycache__/
 # Distribution / packaging
 bin/
 termterm/lib64
-termterm/include
 .Python
 build/
 develop-eggs/

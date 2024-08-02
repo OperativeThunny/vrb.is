@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>Term Term</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/bootstrap.min.css') }}">
+  </head>
+  <body>
+    <div class="container">
+      <div class="header"><h1>Term Term</h1></div>
+    </div>
+    <div class="container">
+      <div class="row align-items-center">
+        <div class="col">
+          {% include("_navigation.html") %}
+        </div>
+        <div class="col">{% block content %}{{ content_html | safe }}{% endblock content %}</div>
+      </div>
+    </div>
+    <script src="{{ url_for('static', filename='js/bootstrap.bundle.min.js') }}"></script> 
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+  </body>
+</html>

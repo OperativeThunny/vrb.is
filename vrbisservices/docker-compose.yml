@@ -1,0 +1,89 @@
+
+networks:
+  default:
+    name: vrbis-network
+
+# https://doc.traefik.io/traefik/getting-started/quick-start/
+
+# Check this out for showing how to start up a container that just executes a custom command:
+# https://github.com/traefik/traefik/issues/2418
+
+services:
+  traefik:
+    #image: "traefik:v2.9"
+    image: "traefik:latest"
+    container_name: "traefik"
+    restart: always
+    # Enables the web UI and tells Traefik to listen to docker
+    # command: --api.insecure=true --providers.docker
+    command:
+      - "--log.level=DEBUG"
+      - "--accesslog=true"
+      # - "--api.insecure=true"
+      - "--providers.docker=true"
+      - "--providers.docker.exposedbydefault=false"
+      - "--entrypoints.web.address=:80"
+      # redirect http to https:
+      - "--entrypoints.web.http.redirections.entryPoint.to=websecure"
+      - "--entrypoints.web.http.redirections.entryPoint.scheme=https"
+      - "--entrypoints.web.http.redirections.entrypoint.permanent=true"
+      # Listen on https and automatically generate certificates for configured domains:
+      - "--entrypoints.websecure.address=:443"
+      # - "--certificatesresolvers.myresolver.acme.caserver=https://acme-staging-v02.api.letsencrypt.org/directory"
+      - "--certificatesresolvers.vrbisresolver.acme.tlschallenge=true"
+      - "--certificatesresolvers.vrbisresolver.acme.email=webadminHTTPSCertificate@vrb.is"
+      - "--certificatesresolvers.vrbisresolver.acme.storage=/letsencrypt/acme.json"
+      # Enable the Traefik Dashboard and API
+      # - "--api.insecure=true"
+      # - "--api.dashboard=true"
+      # Enable tracing and metrics
+      # - "--metrics=true"
+      # - "--metrics.prometheus=true"
+      # - "--metrics.prometheus.entryPoint=metrics"
+      # - "--tracing=true"
+      # - "--tracing.serviceName=traefik"
+      # - "--tracing.jaeger.localAgentHostPort=jaeger:6831"
+      # Add the fail2ban plugin
+      - "--experimental.plugins.fail2ban.modulename=github.com/tomMoulard/fail2ban"
+      - "--experimental.plugins.fail2ban.version=v0.6.6"
+      - "--experimental.plugins.rewrite-body.modulename=github.com/packruler/rewrite-body"
+      - "--experimental.plugins.rewrite-body.version=v1.2.0"
+    ports:
+      - "0.0.0.0:80:80"
+      - "0.0.0.0:443:443"
+      # The Web UI (enabled by --api.insecure=true)
+      # - "0.0.0.0:8080:8080"
+    volumes:
+      - "/opt/www/letsencrypt:/letsencrypt"
+      - "/var/run/docker.sock:/var/run/docker.sock:ro"
+
+  termterm:
+    build: 
+      context: ../termterm/tt
+    image: termterm
+    container_name: termterm
+    restart: always
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.termterm.rule=Host(`vrb.is`) && PathPrefix(`/tt`)"
+      - "traefik.http.routers.termterm.entrypoints=websecure"
+      - "traefik.http.routers.termterm.tls.certresolver=vrbisresolver"
+      #- "traefik.http.routers.termterm.middlewares=strip-ttregex"
+      #strip the /tt prefix from the path before forwarding to the container
+      #- "traefik.http.middlewares.strip-ttregex.stripprefix.prefixes=/xyz" # this is a dummy value, it doesn't matter what it is now that we are using gunicorn, but this middleware needs to be here or else it no twerkie jerkie
+
+  vrbis:
+    image: nginx:latest
+    container_name: vrbis
+    restart: always
+    volumes:
+      - /opt/www/vrbis:/usr/share/nginx/html
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.vrbis.rule=Host(`vrb.is`)"
+      - "traefik.http.routers.vrbis.entrypoints=websecure"
+      - "traefik.http.routers.vrbis.tls.certresolver=vrbisresolver"
+    depends_on:
+      - traefik
+  
+

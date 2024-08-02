@@ -9,9 +9,6 @@ __pycache__/
 *.so
 
 # Distribution / packaging
-bin/
-termterm/lib64
-termterm/include
 .Python
 build/
 develop-eggs/

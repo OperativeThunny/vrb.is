@@ -1,0 +1,8 @@
+Flask
+NumPy
+FastAPI
+sqlalchemy
+python-dotenv
+validators
+Uvicorn
+Gunicorn

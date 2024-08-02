@@ -1,0 +1,15 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<ul>
+    {% for termterm in termterms %}
+    <li style="text-transform: uppercase">
+        {% for term in termterm %}
+        <a href="http://dict.org/bin/Dict?Form=Dict2&Database=*&Query={{ term }}">
+        {{ term }}
+        </a>
+        {% endfor %}
+    </li>
+    {% endfor %}
+</ul>
+{% endblock content %}

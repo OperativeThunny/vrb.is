@@ -10,8 +10,7 @@ __pycache__/
 
 # Distribution / packaging
 bin/
-termterm/lib64
-termterm/include
+termterm/lib64/
 .Python
 build/
 develop-eggs/

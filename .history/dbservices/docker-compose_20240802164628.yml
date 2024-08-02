@@ -1,0 +1,31 @@
+
+# https://tjtelan.com/blog/how-to-link-multiple-docker-compose-via-network/
+# Set up a mariadb docker compose file with the databse persistent volume be
+# mounted at local directory /opt/data/mariadb
+
+networks:
+  default:
+    name: vrbis-network
+
+volumes:
+  mariadb:
+
+secrets:
+  mariadb_root_password:
+    file: ./mariadb_root_password.txt
+
+services:
+  mariadb:
+    image: mariadb:11.4.2
+    container_name: mariadb
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: ${mariadb_root_password}
+    secrets:
+      - mariadb_root_password
+    volumes:
+      - mariadb:/var/lib/mysql
+    # We will only interact with the DB instance from a container in the same network.
+    # ports:
+    #   - 3306:3306
+
