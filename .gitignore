@@ -9,6 +9,9 @@ __pycache__/
 *.so
 
 .history
+VBulletin*.zip
+vb*.zip
+VB*.zip
 
 # Distribution / packaging
 bin/

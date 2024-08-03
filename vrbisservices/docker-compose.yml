@@ -8,6 +8,10 @@ networks:
 # Check this out for showing how to start up a container that just executes a custom command:
 # https://github.com/traefik/traefik/issues/2418
 
+volumes:
+  forums:
+
+
 services:
   traefik:
     #image: "traefik:v2.9"
@@ -71,6 +75,25 @@ services:
       #- "traefik.http.routers.termterm.middlewares=strip-ttregex"
       #strip the /tt prefix from the path before forwarding to the container
       #- "traefik.http.middlewares.strip-ttregex.stripprefix.prefixes=/xyz" # this is a dummy value, it doesn't matter what it is now that we are using gunicorn, but this middleware needs to be here or else it no twerkie jerkie
+
+  forums:
+    build:
+      context: ../forums
+      dockerfile: Dockerfile
+    image: vrbisforums
+    container_name: vrbisforums
+    restart: always
+    volumes:
+      - forums:/var/www/html
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.forums.rule=Host(`vrb.is`) && PathPrefix(`/forums`)"
+      - "traefik.http.routers.forums.entrypoints=websecure"
+      - "traefik.http.routers.forums.tls.certresolver=vrbisresolver"
+      - "traefik.http.routers.forums.middlewares=strip-forumsregex"
+      #strip the /tt prefix from the path before forwarding to the container
+      - "traefik.http.middlewares.strip-forumsregex.stripprefix.prefixes=/forums" # this is a dummy value, it doesn't matter what it is now that we are using gunicorn, but this middleware needs to be here or else it no twerkie jerkie
+
 
   vrbis:
     image: nginx:latest
