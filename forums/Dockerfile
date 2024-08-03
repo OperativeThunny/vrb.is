@@ -7,8 +7,13 @@ USER 0
 RUN mkdir /app
 
 COPY VBulletin606.zip /app
+
 RUN chown -R nobody:nobody /app && \
-    apk add --no-cache unzip
+    apk add --no-cache unzip inotify-tools
+
+COPY nginxReloader.sh /opt/nginxReloader.sh
+
+RUN chmod +x /opt/nginxReloader.sh
 
 USER nobody
 
