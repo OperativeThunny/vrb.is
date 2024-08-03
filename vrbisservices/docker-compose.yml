@@ -85,14 +85,15 @@ services:
     restart: always
     volumes:
       - forums:/var/www/html
+      - /home/vrbtn/dev/forums/nginx/conf.d/:/etc/nginx/conf.d/
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.forums.rule=Host(`vrb.is`) && PathPrefix(`/forums`)"
+      - "traefik.http.routers.forums.rule=Host(`vrb.is`) && PathPrefix(`/forums`) || Host(`vrb.is`) && PathPrefix(`/forums/`)"
       - "traefik.http.routers.forums.entrypoints=websecure"
       - "traefik.http.routers.forums.tls.certresolver=vrbisresolver"
-      - "traefik.http.routers.forums.middlewares=strip-forumsregex"
       #strip the /tt prefix from the path before forwarding to the container
-      - "traefik.http.middlewares.strip-forumsregex.stripprefix.prefixes=/forums" # this is a dummy value, it doesn't matter what it is now that we are using gunicorn, but this middleware needs to be here or else it no twerkie jerkie
+      - "traefik.http.routers.forums.middlewares=strip-forumsregex"
+      - "traefik.http.middlewares.strip-forumsregex.stripprefix.prefixes=/forums"
 
 
   vrbis:
