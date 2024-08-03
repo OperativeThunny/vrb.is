@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 ###########
 # from https://cyral.com/blog/how-to-auto-reload-nginx/#:~:text=Create%20a%20new%20file%20called,and%20then%20automatically%20reload%20Nginx.&text=nginxReloader.sh%20will%20continuously%20watch,%2Fetc%2Fnginx%2Fconf.d%20directory.
 
