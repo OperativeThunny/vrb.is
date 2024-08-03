@@ -85,13 +85,14 @@ services:
     restart: always
     volumes:
       - forums:/var/www/html
-      - /home/vrbtn/dev/forums/nginx/conf.d/:/etc/nginx/conf.d/
+      - /home/vrbtn/dev/vrb.is/forums/etc/nginx/conf.d:/etc/nginx/conf.d
+      - /home/vrbtn/dev/vrb.is/forums/etc/supervisor/conf.d:/etc/supervisor/conf.d
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.forums.rule=Host(`vrb.is`) && PathPrefix(`/forums`) || Host(`vrb.is`) && PathPrefix(`/forums/`)"
       - "traefik.http.routers.forums.entrypoints=websecure"
       - "traefik.http.routers.forums.tls.certresolver=vrbisresolver"
-      #strip the /tt prefix from the path before forwarding to the container
+      # strip the /forums prefix from the path before forwarding to the container
       - "traefik.http.routers.forums.middlewares=strip-forumsregex"
       - "traefik.http.middlewares.strip-forumsregex.stripprefix.prefixes=/forums"
 
