@@ -13,6 +13,11 @@ VBulletin*.zip
 vb*.zip
 VB*.zip
 
+secrets/*.txt
+urlshort/secrets/*.txt
+urlshort/pb_data
+urlshort/pocketbase*
+
 # Distribution / packaging
 bin/
 termterm/lib64

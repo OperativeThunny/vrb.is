@@ -1,0 +1,33 @@
+networks:
+  default:
+    name: vrbis-network
+
+secrets:
+  default_admin_email:
+    file: ./secrets/default_admin_email.txt
+  default_admin_password:
+    file: ./secrets/default_admin_password.txt
+
+volumes:
+  pbdata:
+
+services:
+  urlshortener:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      secrets:
+        - default_admin_email
+        - default_admin_password
+    image:  urlshortener
+    container_name: urlshortener
+    restart: always
+    volumes:
+      - pbdata:/opt/pocketbase/pb_data
+    networks:
+      - default
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.urlshort.rule=Host(`vrb.is`) && PathPrefix(`/s`)"
+      - "traefik.http.services.urlshort.loadbalancer.server.port=8090"
+    
