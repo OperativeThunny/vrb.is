@@ -1,15 +1,21 @@
-
-networks:
-  default:
-    name: vrbis-network
-
 # https://doc.traefik.io/traefik/getting-started/quick-start/
 
 # Check this out for showing how to start up a container that just executes a custom command:
 # https://github.com/traefik/traefik/issues/2418
 
+networks:
+  default:
+    name: vrbis-network
+
+secrets:
+  urlshort_default_admin_email:
+    file: ../urlshort/secrets/default_admin_email.txt
+  urlshort_default_admin_password:
+    file: ../urlshort/secrets/default_admin_password.txt
+
 volumes:
   forums:
+  pbdata:
 
 
 services:
@@ -72,9 +78,8 @@ services:
       - "traefik.http.routers.termterm.rule=Host(`vrb.is`) && PathPrefix(`/tt`)"
       - "traefik.http.routers.termterm.entrypoints=websecure"
       - "traefik.http.routers.termterm.tls.certresolver=vrbisresolver"
-      #- "traefik.http.routers.termterm.middlewares=strip-ttregex"
-      #strip the /tt prefix from the path before forwarding to the container
-      #- "traefik.http.middlewares.strip-ttregex.stripprefix.prefixes=/xyz" # this is a dummy value, it doesn't matter what it is now that we are using gunicorn, but this middleware needs to be here or else it no twerkie jerkie
+    depends_on:
+      - traefik
 
   forums:
     build:
@@ -95,7 +100,33 @@ services:
       # strip the /forums prefix from the path before forwarding to the container
       - "traefik.http.routers.forums.middlewares=strip-forumsregex"
       - "traefik.http.middlewares.strip-forumsregex.stripprefix.prefixes=/forums"
+    depends_on:
+      - traefik
 
+  urlshortener:
+    build:
+      context: ../urlshort
+      dockerfile: Dockerfile
+      secrets:
+        - urlshort_default_admin_email
+        - urlshort_default_admin_password
+    image:  urlshortener
+    container_name: urlshortener
+    restart: always
+    volumes:
+      - pbdata:/opt/pocketbase/pb_data
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.urlshortener.rule=Host(`vrb.is`) && PathPrefix(`/s/`)"
+      - "traefik.http.routers.urlshortener.entrypoints=websecure"
+      - "traefik.http.routers.urlshortener.tls.certresolver=vrbisresolver"
+      - "traefik.http.routers.urlshortener.middlewares=strip-urlshortregex"
+      - "traefik.http.middlewares.strip-urlshortregex.stripprefix.prefixes=/s/"
+      - "traefik.http.routers.urlshortener.priority=0"
+      # specify the port to use for the service
+      - "traefik.http.services.urlshortener.loadbalancer.server.port=8090"
+    depends_on:
+      - traefik
 
   vrbis:
     image: nginx:latest
@@ -108,6 +139,7 @@ services:
       - "traefik.http.routers.vrbis.rule=Host(`vrb.is`)"
       - "traefik.http.routers.vrbis.entrypoints=websecure"
       - "traefik.http.routers.vrbis.tls.certresolver=vrbisresolver"
+      - "traefik.http.routers.vrbis.priority=5"
     depends_on:
       - traefik
   
