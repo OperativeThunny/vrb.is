@@ -4,6 +4,8 @@ RUN mkdir -p /opt/pocketbase/ && \
     cd /opt/pocketbase
 
 WORKDIR /opt/pocketbase
+COPY ./pb_hooks /opt/pocketbase/pb_hooks
+COPY ./pb_migrations /opt/pocketbase/pb_migrations
 
 RUN --mount=type=secret,id=urlshort_default_admin_email --mount=type=secret,id=urlshort_default_admin_password \
     apk add --no-cache unzip inotify-tools wget curl file && \

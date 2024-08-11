@@ -129,11 +129,13 @@ services:
       - traefik
 
   vrbis:
-    image: nginx:latest
+    #image: nginx:latest
+    image: trafex/php-nginx:latest
     container_name: vrbis
     restart: always
     volumes:
-      - /opt/www/vrbis:/usr/share/nginx/html
+      #- /opt/www/vrbis:/usr/share/nginx/html
+      - /opt/www/vrbis:/var/www/html
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.vrbis.rule=Host(`vrb.is`)"
