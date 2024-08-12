@@ -146,7 +146,7 @@
               const result = await pb.collection('URL').update(record.id, data);
               
               // redirect to the target URL
-              //window.location.href = record.target;
+              window.location.href = record.target;
             }
           } catch (e) {
             console.error(e);
