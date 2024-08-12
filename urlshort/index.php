@@ -95,7 +95,7 @@
         } while (keyResult || adminKeyResult);
 
         const data = {
-          "is_active": 1,
+          "is_active": true,
           "target": url,
           "key": key,
           "admin_key": admin_key,
@@ -136,7 +136,7 @@
               
               const data = {
                 //"is_active": record.is_active,
-                "is_active": 1,
+                "is_active": true,
                 "target": record.target,
                 "key": record.key,
                 "admin_key": record.admin_key,
@@ -207,9 +207,12 @@
             deleteButton.innerText = 'Delete';
             deleteButton.addEventListener('click', async () => {
               try {
-                record.is_active = 0;
+                record.is_active = false;
                 const result = await pb.collection('URL').update(record.id, record);
-                console.log(result);
+                // close modal and redirect to home page
+                $('#adminModal').modal('hide');
+                console.log('deleted record and redirecting to home');
+                window.location.href = '/';
               } catch (e) {
                 console.error(e);
               }
