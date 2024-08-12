@@ -1,62 +1,3 @@
-<?php
-require_once('includes/http_get.php');
-
-// This is a simple PHP script that redirects the user to the target URL.
-if (isset($_REQUEST['q'])) {
-  $key = $_REQUEST['q'];
-  if (stripos($key, '/admin/') === 0) {
-    $admin_key = substr($key, 7);
-    // delete the record and add a bootstrap modal to the page via javascript
-    // onload saying record deleted
-    if (strlen($admin_key) > 12) {
-      // this is not a valid admin key
-      $admin_key = false;
-      exit();
-    }
-    // issue http get request to the PocketBase API to get the record
-    $url = 'https://vrb.is/s/api/collections/URL/records?filter=(admin_key="'.$admin_key.'")';
-    $response = http_get($url);
-    
-  } else {
-    $key = str_replace("/", "", $key);
-    if (strlen($key) < 5 || strlen($key) > 12) {
-      // this is not a valid key
-      $key = false;
-      exit();
-    }
-    // get the record and issue redirect and add one to the click count
-    // issue http get request to the PocketBase API to get the record
-    $url = 'https://vrb.is/s/api/collections/URL/records?filter=(key="'.$key.'")&fields=id,clicks,target,key,admin_key';
-    
-    $response = http_get($url);
-    $responseObj = json_decode($response);
-    if (isset($responseObj->items) && count($responseObj->items) > 0) {
-      $record = $responseObj->items[0];
-      // increment the click count
-      $record->clicks++;
-      $id = $record->id;
-      unset($record->created);
-      unset($record->updated);
-      unset($record->collectionName);
-      unset($record->collectionId);
-      unset($record->id);
-      // unset($record->target);
-      // unset($record->key);
-      // unset($record->admin_key);
-      // unset($record->active);
-      $url = 'https://vrb.is/s/api/collections/URL/records/' . $id;
-      //$data = '"data":'.json_encode($record);
-      $data = json_encode($record);
-      //$data = "clicks=".$record->clicks."";
-      printf("<pre>%s</pre>", print_r($data, true));
-      $response = http_patch($url, $data, "application/json");
-      printf("<pre>%s</pre>", print_r($response, true));
-      //header('Location: '.$record->target);
-      exit();
-    }
-  }
-}
-?>
 <!DOCTYPE html>
 <html lang="en">
   <head>
@@ -108,14 +49,7 @@ if (isset($_REQUEST['q'])) {
         <p>Copyright &copy; 2024</p>
       </footer>
     </div>
-    <script>
-      // This is a simple JavaScript function that logs a message to the console.
-      function myFunction() {
-        console.log("Hello, world!");
-      }
-      // Register the `myFunction()` function to be executed when the page loads.
-      window.addEventListener("load", myFunction);
-    </script>
+    
     <script src="/js/bootstrap.min.js"></script>
     <script src="/pocketbasesdk/js-sdk-0.21.4/dist/pocketbase.umd.js"></script>
     <script type="text/javascript">
@@ -159,7 +93,7 @@ if (isset($_REQUEST['q'])) {
         } while (keyResult || adminKeyResult);
 
         const data = {
-          "active": true,
+          "is_active": 1,
           "target": url,
           "key": key,
           "admin_key": admin_key,
@@ -180,6 +114,45 @@ if (isset($_REQUEST['q'])) {
           // show bootstrap alert with error message
         }
         
+      });
+
+      
+      window.addEventListener("load", async () => {
+        // get the key from the URL, issue redirect after incrementing the click count
+        let key = window.location.pathname;
+        key = key.substring(1)
+        
+        if (key.length > 1 && !key.includes('admin')) {
+          try {
+            const record = await pb.collection('URL').getFirstListItem('key="'+key+'"', {
+              fields: 'id,clicks,target,key,admin_key,active'
+            });
+            
+            if (record) {
+              // increment the click count
+              record.clicks++;
+              
+              const data = {
+                //"is_active": record.is_active,
+                "is_active": 1,
+                "target": record.target,
+                "key": record.key,
+                "admin_key": record.admin_key,
+                "clicks": record.clicks
+              };
+              
+              console.log(data);
+              const result = await pb.collection('URL').update(record.id, data);
+              console.log(result);
+              // redirect to the target URL
+              //window.location.href = record.target;
+            }
+          } catch (e) {
+            console.error(e);
+          }
+        } else {
+          console.log("no key found in URL");
+        }
       });
     </script>
   </body>
